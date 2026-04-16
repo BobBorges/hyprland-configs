@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+dir="${1:-}"
+if [[ "$dir" != "next" && "$dir" != "prev" ]]; then
+    echo "usage: $0 next|prev" >&2
+    exit 1
+fi
+
+focused_monitor=$(hyprctl -j monitors | jq -r '.[] | select(.focused == true) | .name')
+current_ws=$(hyprctl -j monitors | jq -r '.[] | select(.focused == true) | .activeWorkspace.id')
+
+case "$focused_monitor" in
+    eDP-1)
+        start=1
+        end=6
+        ;;
+    HDMI-A-1)
+        start=7
+        end=12
+        ;;
+    DP-3)
+        start=13
+        end=18
+        ;;
+    *)
+        echo "Unknown monitor: $focused_monitor" >&2
+        exit 1
+        ;;
+esac
+
+if [[ "$dir" == "next" ]]; then
+    if (( current_ws >= start && current_ws < end )); then
+        target=$((current_ws + 1))
+    #else
+    #    target=$start
+    fi
+else
+    if (( current_ws > start && current_ws <= end )); then
+        target=$((current_ws - 1))
+    #else
+    #    target=$end
+    fi
+fi
+
+hyprctl dispatch workspace "$target"
