@@ -1,0 +1,5 @@
+#!/bin/bash
+sleep 1
+hyprctl dispatch movetoworkspacesilent '6,class:^(Slack)$'
+sleep 10
+hyprctl dispatch closewindow 'class:^(Slack)$'
